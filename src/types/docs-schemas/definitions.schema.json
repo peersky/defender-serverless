@@ -82,7 +82,7 @@
         "name": { "type": "string" },
         "address": { "$ref": "definitions.schema.json/#/definitions/address", "format": "uri-reference" },
         "network": { "$ref": "definitions.schema.json/#/definitions/network", "format": "uri-reference" },
-        "abi": { "type": "string" },
+        "abi": { "type": ["array","string"] },
         "nat-spec": { "type": "string" }
       },
       "required": ["name", "address", "network"]
@@ -180,7 +180,7 @@
           "type": "array",
           "items": { "$ref": "definitions.schema.json/#/definitions/address", "format": "uri-reference" }
         },
-        "abi": { "type": "string" },
+        "abi": { "type": ["array","string"] },
         "alert-threshold": {
           "title": "AlertThreshold",
           "type": "object",
@@ -249,7 +249,7 @@
           "type": "array",
           "items": { "$ref": "definitions.schema.json/#/definitions/address", "format": "uri-reference" }
         },
-        "abi": { "type": "string" },
+        "abi": { "type": ["array","string"] },
         "alert-threshold": {
           "title": "AlertThreshold",
           "type": "object",

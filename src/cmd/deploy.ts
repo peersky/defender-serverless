@@ -323,7 +323,7 @@ export default class DefenderDeploy {
           name: contract.name,
           network: contract.network,
           address: contract.address,
-          abi: contract.abi && JSON.stringify(JSON.parse(contract.abi)),
+          abi: contract.abi && JSON.stringify(typeof contract.abi === 'string' ? JSON.parse(contract.abi) : contract.abi),
           natSpec: contract['nat-spec'] ? contract['nat-spec'] : undefined,
         });
         return {

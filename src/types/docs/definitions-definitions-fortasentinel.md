@@ -20,7 +20,7 @@ any of
 | [type](#type)                             | `string`  | Required | cannot be null | [Definitions](definitions-definitions-fortasentinel-properties-type.md "#/definitions/fortaSentinel/properties/type")                      |
 | [network](#network)                       | `string`  | Required | cannot be null | [Definitions](definitions-definitions-network.md "#/definitions/fortaSentinel/properties/network")                                         |
 | [addresses](#addresses)                   | `array`   | Optional | cannot be null | [Definitions](definitions-definitions-fortasentinel-properties-addresses.md "#/definitions/fortaSentinel/properties/addresses")            |
-| [abi](#abi)                               | `string`  | Optional | cannot be null | [Definitions](definitions-definitions-fortasentinel-properties-abi.md "#/definitions/fortaSentinel/properties/abi")                        |
+| [abi](#abi)                               | Multiple  | Optional | cannot be null | [Definitions](definitions-definitions-fortasentinel-properties-abi.md "#/definitions/fortaSentinel/properties/abi")                        |
 | [alert-threshold](#alert-threshold)       | `object`  | Optional | cannot be null | [Definitions](definitions-definitions-fortasentinel-properties-alertthreshold.md "#/definitions/fortaSentinel/properties/alert-threshold") |
 | [paused](#paused)                         | `boolean` | Optional | cannot be null | [Definitions](definitions-definitions-fortasentinel-properties-paused.md "#/definitions/fortaSentinel/properties/paused")                  |
 | [autotask-condition](#autotask-condition) | `object`  | Optional | cannot be null | [Definitions](definitions-definitions-autotask.md "#/definitions/fortaSentinel/properties/autotask-condition")                             |
@@ -163,7 +163,7 @@ any of
 
 *   is optional
 
-*   Type: `string`
+*   Type: any of the folllowing: `array` or `string` ([Details](definitions-definitions-fortasentinel-properties-abi.md))
 
 *   cannot be null
 
@@ -171,7 +171,7 @@ any of
 
 ### abi Type
 
-`string`
+any of the folllowing: `array` or `string` ([Details](definitions-definitions-fortasentinel-properties-abi.md))
 
 ## alert-threshold
 

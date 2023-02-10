@@ -1,3 +1,3 @@
 ## abi Type
 
-`string`
+any of the folllowing: `array` or `string` ([Details](definitions-definitions-contract-properties-abi.md))
