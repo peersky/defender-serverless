@@ -23,6 +23,8 @@ import {
   validateTypesAndSanitise,
   constructNotificationCategory,
   validateAdditionalPermissionsOrThrow,
+  getDeploymentConfigClient,
+  getBlockExplorerApiKeyClient,
 } from '../utils';
 import {
   DefenderAutotask,
@@ -47,10 +49,16 @@ import {
   DefenderFortaSentinelResponse,
   DefenderScheduleTrigger,
   DefenderWebhookTrigger,
+  DefenderSentinelTrigger,
+  DefenderMonitorFilterTrigger,
+  DefenderDeploymentConfig,
+  YDeploymentConfig,
+  DefenderBlockExplorerApiKey,
+  YBlockExplorerApiKey,
   DefenderCategory,
   YCategory,
-  DefenderSentinelTrigger,
 } from '../types';
+import keccak256 from 'keccak256';
 
 export default class DefenderDeploy {
   serverless: Serverless;
@@ -87,6 +95,8 @@ export default class DefenderDeploy {
       contracts: [],
       relayerApiKeys: [],
       secrets: [],
+      deploymentConfigs: [],
+      blockExplorerApiKeys: [],
     };
     // Contracts
     const contracts: YContract[] = this.serverless.service.resources?.Resources?.contracts ?? [];
@@ -168,11 +178,35 @@ export default class DefenderDeploy {
 
     // Secrets
     const allSecrets = getConsolidatedSecrets(this.serverless);
-    const dSecrets = (await autotaskClient.listSecrets()).secretNames;
+    const dSecrets = (await autotaskClient.listSecrets()).secretNames ?? [];
     const secretsDifference = _.differenceWith(
       dSecrets,
-      Object.values(allSecrets).map((k, _) => Object.keys(k)[0]),
+      Object.values(allSecrets).map((k, _) => Object.keys(k)[0] ?? ''),
       (a: string, b: string) => a === b,
+    );
+
+    // Deployment Configs
+    const deploymentConfigs: YDeploymentConfig[] =
+      this.serverless.service.resources?.Resources?.['deployment-configs'] ?? [];
+    const deploymentConfigClient = getDeploymentConfigClient(this.teamKey!);
+    const dDeploymentConfigs = await deploymentConfigClient.list();
+    const deploymentConfigDifference = _.differenceWith(
+      dDeploymentConfigs,
+      Object.entries(deploymentConfigs ?? []),
+      (a: DefenderDeploymentConfig, b: [string, YDeploymentConfig]) =>
+        a.stackResourceId === getResourceID(getStackName(this.serverless), b[0]),
+    );
+
+    // Block Explorer Api Keys
+    const blockExplorerApiKeys: YBlockExplorerApiKey[] =
+      this.serverless.service.resources?.Resources?.['block-explorer-api-keys'] ?? [];
+    const blockExplorerApiKeysClient = getBlockExplorerApiKeyClient(this.teamKey!);
+    const dBlockExplorerApiKeys = await blockExplorerApiKeysClient.list();
+    const blockExplorerApiKeyDifference = _.differenceWith(
+      dBlockExplorerApiKeys,
+      Object.entries(blockExplorerApiKeys ?? []),
+      (a: DefenderBlockExplorerApiKey, b: [string, YBlockExplorerApiKey]) =>
+        a.stackResourceId === getResourceID(getStackName(this.serverless), b[0]),
     );
 
     difference.contracts = contractDifference;
@@ -181,6 +215,8 @@ export default class DefenderDeploy {
     difference.categories = categoryDifference;
     difference.autotasks = autotaskDifference;
     difference.secrets = secretsDifference;
+    difference.deploymentConfigs = deploymentConfigDifference;
+    difference.blockExplorerApiKeys = blockExplorerApiKeyDifference;
 
     return difference;
   }
@@ -191,25 +227,25 @@ export default class DefenderDeploy {
     const formattedResources = {
       autotasks:
         withResources.autotasks.length > 0
-          ? withResources.autotasks.map((a) => `${a.stackResourceId ?? a.name} (${a.autotaskId})`)
+          ? withResources.autotasks.map(a => `${a.stackResourceId ?? a.name} (${a.autotaskId})`)
           : undefined,
       sentinels:
         withResources.sentinels.length > 0
-          ? withResources.sentinels.map((a) => `${a.stackResourceId ?? a.name} (${a.subscriberId})`)
+          ? withResources.sentinels.map(a => `${a.stackResourceId ?? a.name} (${a.subscriberId})`)
           : undefined,
       notifications:
         withResources.notifications.length > 0
-          ? withResources.notifications.map((a) => `${a.stackResourceId ?? a.name} (${a.notificationId})`)
+          ? withResources.notifications.map(a => `${a.stackResourceId ?? a.name} (${a.notificationId})`)
           : undefined,
       contracts:
         withResources.contracts.length > 0
-          ? withResources.contracts.map((a) => `${a.network}-${a.address} (${a.name})`)
+          ? withResources.contracts.map(a => `${a.network}-${a.address} (${a.name})`)
           : undefined,
       relayerApiKeys:
         withResources.relayerApiKeys.length > 0
-          ? withResources.relayerApiKeys.map((a) => `${a.stackResourceId ?? a.apiKey} (${a.keyId})`)
+          ? withResources.relayerApiKeys.map(a => `${a.stackResourceId ?? a.apiKey} (${a.keyId})`)
           : undefined,
-      secrets: withResources.secrets.length > 0 ? withResources.secrets.map((a) => `${a}`) : undefined,
+      secrets: withResources.secrets.length > 0 ? withResources.secrets.map(a => `${a}`) : undefined,
     };
     return `${start}\n${
       _.isEmpty(validateTypesAndSanitise(formattedResources))
@@ -238,7 +274,7 @@ export default class DefenderDeploy {
       });
       const { confirm } = await prompt.get(properties);
 
-      if (confirm.toString().toLowerCase() !== 'y') {
+      if (confirm!.toString().toLowerCase() !== 'y') {
         this.log.error('Confirmation not acquired. Terminating command');
         return;
       }
@@ -251,7 +287,7 @@ export default class DefenderDeploy {
   private async deploySecrets(output: DeployOutput<string>) {
     const allSecrets = getConsolidatedSecrets(this.serverless);
     const client = getAutotaskClient(this.teamKey!);
-    const retrieveExisting = () => client.listSecrets().then((r) => r.secretNames ?? []);
+    const retrieveExisting = () => client.listSecrets().then(r => r.secretNames ?? []);
     await this.wrapper<YSecret, string>(
       this.serverless,
       'Secrets',
@@ -308,13 +344,43 @@ export default class DefenderDeploy {
       contracts,
       retrieveExisting,
       // on update
-      async (_: YContract, match: DefenderContract) => {
-        // defender-client does not support "updating" contracts (name, abi, ..)
-        return {
+      async (contract: YContract, match: DefenderContract) => {
+        const mappedMatch = {
           name: match.name,
+          network: match.network,
+          address: match.address,
+          abi: match.abi && JSON.stringify(JSON.parse(match.abi)),
+          'nat-spec': match.natSpec ? match.natSpec : undefined,
+        };
+
+        // in reality this will never be called as long as defender-client does not return ABI as part of the list response
+        if (_.isEqual(validateTypesAndSanitise(contract), validateTypesAndSanitise(mappedMatch))) {
+          return {
+            name: match.name,
+            id: `${match.network}-${match.address}`,
+            success: false,
+            response: match,
+            notice: `Skipped import - contract ${match.address} already exists on ${match.network}`,
+          };
+        }
+
+        this.log.notice(
+          `Contracts will always update regardless of changes due to certain limitations in Defender API clients.`,
+        );
+
+        const updatedContract = await client.addContract({
+          name: contract.name,
+          network: match.network,
+          address: match.address,
+          abi: contract.abi && JSON.stringify(JSON.parse(contract.abi)),
+          natSpec: contract['nat-spec'] ? contract['nat-spec'] : undefined,
+        });
+
+        return {
+          name: updatedContract.name,
           id: `${match.network}-${match.address}`,
-          success: false,
-          notice: `Skipped import - contract ${match.address} already exists on ${match.network}`,
+          success: true,
+          response: updatedContract,
         };
       },
       // on create
@@ -336,7 +402,7 @@ export default class DefenderDeploy {
       },
       // on remove
       async (contracts: DefenderContract[]) => {
-        await Promise.all(contracts.map(async (c) => await client.deleteContract(`${c.network}-${c.address}`)));
+        await Promise.all(contracts.map(async c => await client.deleteContract(`${c.network}-${c.address}`)));
       },
       // overrideMatchDefinition
       (a: DefenderContract, b: YContract) => {
@@ -354,7 +420,7 @@ export default class DefenderDeploy {
   ) {
     const relayers: YRelayer[] = this.serverless.service.resources?.Resources?.relayers ?? [];
     const client = getRelayClient(this.teamKey!);
-    const retrieveExisting = () => client.list().then((r) => r.items);
+    const retrieveExisting = () => client.list().then(r => r.items);
     await this.wrapper<YRelayer, DefenderRelayer>(
       this.serverless,
       'Relayers',
@@ -416,7 +482,7 @@ export default class DefenderDeploy {
           this.log.info(`Unused resources found on Defender:`);
           this.log.info(JSON.stringify(inDefender, null, 2));
           this.log.progress('component-deploy-extra', `Removing resources from Defender`);
-          await Promise.all(inDefender.map(async (key) => await client.deleteKey(match.relayerId, key.keyId)));
+          await Promise.all(inDefender.map(async key => await client.deleteKey(match.relayerId, key.keyId)));
           this.log.success(`Removed resources from Defender`);
           output.relayerKeys.removed.push(...inDefender);
         }
@@ -430,7 +496,7 @@ export default class DefenderDeploy {
         // create key in Defender thats defined in template
         if (inTemplate) {
           await Promise.all(
-            inTemplate.map(async (key) => {
+            inTemplate.map(async key => {
               const keyStackResource = getResourceID(match.stackResourceId!, key);
               const createdKey = await client.createKey(match.relayerId, keyStackResource);
               this.log.success(`Created API Key (${keyStackResource}) for Relayer (${match.relayerId})`);
@@ -478,7 +544,7 @@ export default class DefenderDeploy {
         const relayerKeys = relayer['api-keys'];
         if (relayerKeys) {
           await Promise.all(
-            relayerKeys.map(async (key) => {
+            relayerKeys.map(async key => {
               const keyStackResource = getResourceID(stackResourceId, key);
               const createdKey = await client.createKey(createdRelayer.relayerId, keyStackResource);
               this.log.success(`Created API Key (${keyStackResource}) for Relayer (${createdRelayer.relayerId})`);
@@ -557,7 +623,7 @@ export default class DefenderDeploy {
       },
       // on remove
       async (notifications: DefenderNotification[]) => {
-        await Promise.all(notifications.map(async (n) => await client.deleteNotificationChannel(n)));
+        await Promise.all(notifications.map(async n => await client.deleteNotificationChannel(n)));
       },
       undefined,
       output,
@@ -634,7 +700,11 @@ export default class DefenderDeploy {
         this.log.warn(`Deleting notification categories is not yet supported.`);
         // await Promise.all(categories.map(async (n) => await client.deleteNotificationCategory(n.categoryId)));
       },
-      undefined,
+      // overrideMatchDefinition
+      // TODO: remove this when we allow creating new categories
+      (a: DefenderCategory, b: YCategory) => {
+        return a.name === b.name;
+      },
       output,
       this.ssotDifference?.categories,
     );
@@ -647,7 +717,7 @@ export default class DefenderDeploy {
       const autotasks = await getAutotaskClient(this.teamKey!).list();
       const notifications = await client.listNotificationChannels();
       const categories = await client.listNotificationCategories();
-      const retrieveExisting = () => client.list().then((r) => r.items);
+      const retrieveExisting = () => client.list().then(r => r.items);
 
       await this.wrapper<YSentinel, DefenderSentinel>(
         this.serverless,
@@ -676,7 +746,7 @@ export default class DefenderDeploy {
           }
 
           const blockwatchersForNetwork = (await client.listBlockwatchers()).filter(
-            (b) => b.network === sentinel.network,
+            b => b.network === sentinel.network,
           );
 
           const newSentinel = constructSentinel(
@@ -706,6 +776,7 @@ export default class DefenderDeploy {
             autotaskTrigger: match.notifyConfig?.autotaskId,
             alertTimeoutMs: match.notifyConfig?.timeoutMs,
             alertMessageBody: match.notifyConfig?.messageBody,
+            alertMessageSubject: match.notifyConfig?.messageSubject,
             notificationChannels: match.notifyConfig?.notifications.map(
               (n: DefenderNotificationReference) => n.notificationId,
             ),
@@ -720,8 +791,8 @@ export default class DefenderDeploy {
             functionConditions: blockConditions && blockConditions.flatMap((c: any) => c.functionConditions),
             txCondition:
               blockConditions &&
-              blockConditions[0].txConditions.length > 0 &&
-              blockConditions[0].txConditions[0].expression,
+              blockConditions[0]!.txConditions.length > 0 &&
+              blockConditions[0]!.txConditions[0]!.expression,
             privateFortaNodeId: (isForta(match) && match.privateFortaNodeId) || undefined,
             addresses: isBlock(match) ? addressRule && addressRule.addresses : match.fortaRule?.addresses,
             autotaskCondition: isBlock(match)
@@ -730,6 +801,7 @@ export default class DefenderDeploy {
             fortaLastProcessedTime: (isForta(match) && match.fortaLastProcessedTime) || undefined,
             agentIDs: (isForta(match) && match.fortaRule?.agentIDs) || undefined,
             fortaConditions: (isForta(match) && match.fortaRule.conditions) || undefined,
+            riskCategory: match.riskCategory,
           };
 
           if (_.isEqual(validateTypesAndSanitise(newSentinel), validateTypesAndSanitise(mappedMatch))) {
@@ -758,7 +830,7 @@ export default class DefenderDeploy {
         // on create
         async (sentinel: YSentinel, stackResourceId: string) => {
           const blockwatchersForNetwork = (await client.listBlockwatchers()).filter(
-            (b) => b.network === sentinel.network,
+            b => b.network === sentinel.network,
           );
           const createdSentinel = await client.create(
             constructSentinel(
@@ -780,7 +852,7 @@ export default class DefenderDeploy {
         },
         // on remove
         async (sentinels: DefenderSentinel[]) => {
-          await Promise.all(sentinels.map(async (s) => await client.delete(s.subscriberId)));
+          await Promise.all(sentinels.map(async s => await client.delete(s.subscriberId)));
         },
         undefined,
         output,
@@ -794,7 +866,7 @@ export default class DefenderDeploy {
   private async deployAutotasks(output: DeployOutput<DefenderAutotask>) {
     const autotasks: YAutotask[] = this.serverless.service.functions as any;
     const client = getAutotaskClient(this.teamKey!);
-    const retrieveExisting = () => client.list().then((r) => r.items);
+    const retrieveExisting = () => client.list().then(r => r.items);
 
     await this.wrapper<YAutotask, DefenderAutotask>(
       this.serverless,
@@ -817,7 +889,7 @@ export default class DefenderDeploy {
         const { codeDigest } = await client.get(match.autotaskId);
 
         const isSchedule = (
-          o: DefenderWebhookTrigger | DefenderScheduleTrigger | DefenderSentinelTrigger,
+          o: DefenderWebhookTrigger | DefenderScheduleTrigger | DefenderSentinelTrigger | DefenderMonitorFilterTrigger,
         ): o is DefenderScheduleTrigger => o.type === 'schedule';
 
         const mappedMatch = {
@@ -914,11 +986,147 @@ export default class DefenderDeploy {
       },
       // on remove
       async (autotasks: DefenderAutotask[]) => {
-        await Promise.all(autotasks.map(async (a) => await client.delete(a.autotaskId)));
+        await Promise.all(autotasks.map(async a => await client.delete(a.autotaskId)));
       },
       undefined,
       output,
       this.ssotDifference?.autotasks,
+    );
+  }
+
+  private async deployDeploymentConfig(output: DeployOutput<DefenderDeploymentConfig>) {
+    const deploymentConfigs: YDeploymentConfig[] =
+      this.serverless.service.resources?.Resources?.['deployment-configs'] ?? [];
+    const client = getDeploymentConfigClient(this.teamKey!);
+    const retrieveExisting = () => client.list();
+
+    await this.wrapper<YDeploymentConfig, DefenderDeploymentConfig>(
+      this.serverless,
+      'Deployment Configs',
+      deploymentConfigs,
+      retrieveExisting,
+      // on update
+      async (deploymentConfig: YDeploymentConfig, match: DefenderDeploymentConfig) => {
+        const deploymentConfigRelayer = deploymentConfig.relayer;
+        const relayers: YRelayer[] = this.serverless.service.resources?.Resources?.relayers ?? [];
+
+        const existingRelayers = (await getRelayClient(this.teamKey!).list()).items;
+        const maybeRelayer = getEquivalentResource<YRelayer | undefined, DefenderRelayer>(
+          this.serverless,
+          deploymentConfigRelayer,
+          relayers,
+          existingRelayers,
+        );
+
+        if (!maybeRelayer)
+          throw new Error(`Cannot find relayer ${deploymentConfigRelayer} in ${match.stackResourceId!}`);
+
+        if (_.isEqual(maybeRelayer.relayerId, match.relayerId)) {
+          return {
+            name: match.stackResourceId!,
+            id: match.deploymentConfigId,
+            success: false,
+            response: match,
+            notice: `Skipped ${match.stackResourceId} - no changes detected`,
+          };
+        }
+
+        const updatedDeploymentConfig = await client.update(match.deploymentConfigId, {
+          relayerId: maybeRelayer.relayerId,
+          stackResourceId: match.stackResourceId!,
+        });
+        return {
+          name: updatedDeploymentConfig.stackResourceId!,
+          id: updatedDeploymentConfig.deploymentConfigId,
+          success: true,
+          response: updatedDeploymentConfig,
+        };
+      },
+      // on create
+      async (deploymentConfig: YDeploymentConfig, stackResourceId: string) => {
+        const deploymentConfigRelayer = deploymentConfig.relayer;
+        const relayers: YRelayer[] = this.serverless.service.resources?.Resources?.relayers ?? [];
+        const existingRelayers = (await getRelayClient(this.teamKey!).list()).items;
+
+        const maybeRelayer = getEquivalentResource<YRelayer | undefined, DefenderRelayer>(
+          this.serverless,
+          deploymentConfigRelayer,
+          relayers,
+          existingRelayers,
+        );
+
+        if (!maybeRelayer) throw new Error(`Cannot find relayer ${deploymentConfigRelayer} in ${stackResourceId}`);
+
+        const importedDeployment = await client.create({ relayerId: maybeRelayer.relayerId, stackResourceId });
+
+        return {
+          name: stackResourceId,
+          id: importedDeployment.deploymentConfigId,
+          success: true,
+          response: importedDeployment,
+        };
+      },
+      // on remove
+      async (deploymentConfigs: DefenderDeploymentConfig[]) => {
+        await Promise.all(deploymentConfigs.map(async c => await client.remove(c.deploymentConfigId)));
+      },
+      undefined,
+      output,
+      this.ssotDifference?.deploymentConfigs,
+    );
+  }
+
+  private async deployBlockExplorerApiKey(output: DeployOutput<DefenderBlockExplorerApiKey>) {
+    const blockExplorerApiKeys: YBlockExplorerApiKey[] =
+      this.serverless.service.resources?.Resources?.['block-explorer-api-keys'] ?? [];
+    const client = getBlockExplorerApiKeyClient(this.teamKey!);
+    const retrieveExisting = () => client.list();
+
+    await this.wrapper<YBlockExplorerApiKey, DefenderBlockExplorerApiKey>(
+      this.serverless,
+      'Block Explorer Api Keys',
+      blockExplorerApiKeys,
+      retrieveExisting,
+      // on update
+      async (blockExplorerApiKey: YBlockExplorerApiKey, match: DefenderBlockExplorerApiKey) => {
+        if (_.isEqual(keccak256(blockExplorerApiKey.key).toString('hex'), match.keyHash)) {
+          return {
+            name: match.stackResourceId!,
+            id: match.blockExplorerApiKeyId,
+            success: false,
+            response: match,
+            notice: `Skipped ${match.stackResourceId} - no changes detected`,
+          };
+        }
+
+        const updatedBlockExplorerApiKey = await client.update(match.blockExplorerApiKeyId, {
+          ...blockExplorerApiKey,
+          stackResourceId: match.stackResourceId!,
+        });
+        return {
+          name: updatedBlockExplorerApiKey.stackResourceId!,
+          id: updatedBlockExplorerApiKey.blockExplorerApiKeyId,
+          success: true,
+          response: updatedBlockExplorerApiKey,
+        };
+      },
+      // on create
+      async (blockExplorerApiKey: YBlockExplorerApiKey, stackResourceId: string) => {
+        const importedBlockExplorerApiKey = await client.create({ ...blockExplorerApiKey, stackResourceId });
+        return {
+          name: stackResourceId,
+          id: importedBlockExplorerApiKey.blockExplorerApiKeyId,
+          success: true,
+          response: importedBlockExplorerApiKey,
+        };
+      },
+      // on remove
+      async (blockExplorerApiKeys: DefenderBlockExplorerApiKey[]) => {
+        await Promise.all(blockExplorerApiKeys.map(async c => await client.remove(c.blockExplorerApiKeyId)));
+      },
+      undefined,
+      output,
+      this.ssotDifference?.blockExplorerApiKeys,
     );
   }
 
@@ -1060,6 +1268,18 @@ export default class DefenderDeploy {
       },
     };
 
+    const deploymentConfigs: DeployOutput<DefenderDeploymentConfig> = {
+      removed: [],
+      created: [],
+      updated: [],
+    };
+
+    const blockExplorerApiKeys: DeployOutput<DefenderBlockExplorerApiKey> = {
+      removed: [],
+      created: [],
+      updated: [],
+    };
+
     const stdOut = {
       stack: stackName,
       timestamp: new Date().toISOString(),
@@ -1070,6 +1290,8 @@ export default class DefenderDeploy {
       notifications,
       categories,
       secrets,
+      deploymentConfigs,
+      blockExplorerApiKeys,
     };
     await this.deploySecrets(stdOut.secrets);
     await this.deployContracts(stdOut.contracts);
@@ -1080,6 +1302,9 @@ export default class DefenderDeploy {
     await this.deployNotifications(stdOut.notifications);
     await this.deployCategories(stdOut.categories);
     await this.deploySentinels(stdOut.sentinels);
+
+    await this.deployDeploymentConfig(stdOut.deploymentConfigs);
+    await this.deployBlockExplorerApiKey(stdOut.blockExplorerApiKeys);
 
     this.log.notice('========================================================');
 

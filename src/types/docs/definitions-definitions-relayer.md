@@ -82,6 +82,7 @@
 | `"optimism-kovan"`        |             |
 | `"optimism-goerli"`       |             |
 | `"arbitrum"`              |             |
+| `"arbitrum-nova"`         |             |
 | `"arbitrum-rinkeby"`      |             |
 | `"arbitrum-goerli"`       |             |
 | `"celo"`                  |             |
@@ -94,7 +95,9 @@
 | `"hederatest"`            |             |
 | `"x-dfk-avax-chain"`      |             |
 | `"x-dfk-avax-chain-test"` |             |
+| `"zksync"`                |             |
 | `"zksync-goerli"`         |             |
+| `"base-goerli"`           |             |
 
 **URI reference**: the string must be a URI reference, according to [RFC 3986](https://tools.ietf.org/html/rfc3986 "check the specification")
 

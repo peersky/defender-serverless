@@ -15,6 +15,17 @@ Reference this group by using
 | Property | Type | Required | Nullable | Defined by |
 | :------- | :--- | :------- | :------- | :--------- |
 
+## Definitions group risk-category
+
+Reference this group by using
+
+```json
+{"$ref":"#/definitions/risk-category"}
+```
+
+| Property | Type | Required | Nullable | Defined by |
+| :------- | :--- | :------- | :------- | :--------- |
+
 ## Definitions group network
 
 Reference this group by using
@@ -195,6 +206,7 @@ Reference this group by using
 | `"optimism-kovan"`        |             |
 | `"optimism-goerli"`       |             |
 | `"arbitrum"`              |             |
+| `"arbitrum-nova"`         |             |
 | `"arbitrum-rinkeby"`      |             |
 | `"arbitrum-goerli"`       |             |
 | `"celo"`                  |             |
@@ -207,7 +219,9 @@ Reference this group by using
 | `"hederatest"`            |             |
 | `"x-dfk-avax-chain"`      |             |
 | `"x-dfk-avax-chain-test"` |             |
+| `"zksync"`                |             |
 | `"zksync-goerli"`         |             |
+| `"base-goerli"`           |             |
 
 **URI reference**: the string must be a URI reference, according to [RFC 3986](https://tools.ietf.org/html/rfc3986 "check the specification")
 
@@ -398,6 +412,7 @@ Reference this group by using
 | `"optimism-kovan"`        |             |
 | `"optimism-goerli"`       |             |
 | `"arbitrum"`              |             |
+| `"arbitrum-nova"`         |             |
 | `"arbitrum-rinkeby"`      |             |
 | `"arbitrum-goerli"`       |             |
 | `"celo"`                  |             |
@@ -410,7 +425,9 @@ Reference this group by using
 | `"hederatest"`            |             |
 | `"x-dfk-avax-chain"`      |             |
 | `"x-dfk-avax-chain-test"` |             |
+| `"zksync"`                |             |
 | `"zksync-goerli"`         |             |
+| `"base-goerli"`           |             |
 
 **URI reference**: the string must be a URI reference, according to [RFC 3986](https://tools.ietf.org/html/rfc3986 "check the specification")
 
@@ -475,10 +492,10 @@ Reference this group by using
 {"$ref":"#/definitions/datadogConfig"}
 ```
 
-| Property                         | Type     | Required | Nullable       | Defined by                                                                                                                                        |
-| :------------------------------- | :------- | :------- | :------------- | :------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [api-key](#api-key)              | `string` | Required | cannot be null | [Definitions](definitions-definitions-datadogconfig-properties-api-key.md "#/definitions/datadogConfig/properties/api-key")              |
-| [metric-p$refix](#metric-prefix) | `string` | Required | cannot be null | [Definitions](definitions-definitions-datadogconfig-properties-metric-prefix.md "#/definitions/datadogConfig/properties/metric-p$refix") |
+| Property                        | Type     | Required | Nullable       | Defined by                                                                                                                                       |
+| :------------------------------ | :------- | :------- | :------------- | :----------------------------------------------------------------------------------------------------------------------------------------------- |
+| [api-key](#api-key)             | `string` | Required | cannot be null | [Definitions](definitions-definitions-datadogconfig-properties-api-key.md "#/definitions/datadogConfig/properties/api-key")             |
+| [metric-prefix](#metric-prefix) | `string` | Required | cannot be null | [Definitions](definitions-definitions-datadogconfig-properties-metric-prefix.md "#/definitions/datadogConfig/properties/metric-prefix") |
 
 ### api-key
 
@@ -498,11 +515,11 @@ Reference this group by using
 
 `string`
 
-### metric-p$refix
+### metric-prefix
 
 
 
-`metric-p$refix`
+`metric-prefix`
 
 *   is required
 
@@ -510,13 +527,13 @@ Reference this group by using
 
 *   cannot be null
 
-*   defined in: [Definitions](definitions-definitions-datadogconfig-properties-metric-prefix.md "#/definitions/datadogConfig/properties/metric-p$refix")
+*   defined in: [Definitions](definitions-definitions-datadogconfig-properties-metric-prefix.md "#/definitions/datadogConfig/properties/metric-prefix")
 
-#### metric-p$refix Type
+#### metric-prefix Type
 
 `string`
 
-#### metric-p$refix Constraints
+#### metric-prefix Constraints
 
 **maximum length**: the maximum number of characters for this string is: `100`
 
@@ -851,6 +868,7 @@ Reference this group by using
 | [confirm-level](#confirm-level)           | Merged    | Optional | cannot be null | [Definitions](definitions-definitions-blocksentinel-properties-confirm-level.md "#/definitions/blockSentinel/properties/confirm-level")    |
 | [notify-config](#notify-config)           | `object`  | Required | cannot be null | [Definitions](definitions-definitions-blocksentinel-properties-notifyconfig.md "#/definitions/blockSentinel/properties/notify-config")     |
 | [conditions](#conditions)                 | `object`  | Optional | cannot be null | [Definitions](definitions-definitions-blocksentinel-properties-conditions.md "#/definitions/blockSentinel/properties/conditions")          |
+| [risk-category](#risk-category)           | `string`  | Optional | cannot be null | [Definitions](definitions-definitions-blocksentinel-properties-riskcategory.md "#/definitions/blockSentinel/properties/risk-category")     |
 
 ### name
 
@@ -943,6 +961,7 @@ Reference this group by using
 | `"optimism-kovan"`        |             |
 | `"optimism-goerli"`       |             |
 | `"arbitrum"`              |             |
+| `"arbitrum-nova"`         |             |
 | `"arbitrum-rinkeby"`      |             |
 | `"arbitrum-goerli"`       |             |
 | `"celo"`                  |             |
@@ -955,7 +974,9 @@ Reference this group by using
 | `"hederatest"`            |             |
 | `"x-dfk-avax-chain"`      |             |
 | `"x-dfk-avax-chain-test"` |             |
+| `"zksync"`                |             |
 | `"zksync-goerli"`         |             |
+| `"base-goerli"`           |             |
 
 **URI reference**: the string must be a URI reference, according to [RFC 3986](https://tools.ietf.org/html/rfc3986 "check the specification")
 
@@ -1141,6 +1162,37 @@ one (and only one) of
 
 `object` ([Conditions](definitions-definitions-blocksentinel-properties-conditions.md))
 
+### risk-category
+
+
+
+`risk-category`
+
+*   is optional
+
+*   Type: `string` ([RiskCategory](definitions-definitions-blocksentinel-properties-riskcategory.md))
+
+*   cannot be null
+
+*   defined in: [Definitions](definitions-definitions-blocksentinel-properties-riskcategory.md "#/definitions/blockSentinel/properties/risk-category")
+
+#### risk-category Type
+
+`string` ([RiskCategory](definitions-definitions-blocksentinel-properties-riskcategory.md))
+
+#### risk-category Constraints
+
+**enum**: the value of this property must be equal to one of the following values:
+
+| Value              | Explanation |
+| :----------------- | :---------- |
+| `"NONE"`           |             |
+| `"GOVERNANCE"`     |             |
+| `"ACCESS-CONTROL"` |             |
+| `"SUSPICIOUS"`     |             |
+| `"FINANCIAL"`      |             |
+| `"TECHNICAL"`      |             |
+
 ## Definitions group fortaSentinel
 
 Reference this group by using
@@ -1164,6 +1216,7 @@ Reference this group by using
 | [conditions](#conditions-1)                 | `object`  | Optional | cannot be null | [Definitions](definitions-definitions-fortasentinel-properties-conditions.md "#/definitions/fortaSentinel/properties/conditions")          |
 | [forta-node-id](#forta-node-id)             | `string`  | Optional | cannot be null | [Definitions](definitions-definitions-fortasentinel-properties-forta-node-id.md "#/definitions/fortaSentinel/properties/forta-node-id")    |
 | [agent-ids](#agent-ids)                     | `array`   | Optional | cannot be null | [Definitions](definitions-definitions-fortasentinel-properties-agentids.md "#/definitions/fortaSentinel/properties/agent-ids")             |
+| [risk-category](#risk-category-1)           | `string`  | Optional | cannot be null | [Definitions](definitions-definitions-fortasentinel-properties-riskcategory.md "#/definitions/fortaSentinel/properties/risk-category")     |
 
 ### name
 
@@ -1256,6 +1309,7 @@ Reference this group by using
 | `"optimism-kovan"`        |             |
 | `"optimism-goerli"`       |             |
 | `"arbitrum"`              |             |
+| `"arbitrum-nova"`         |             |
 | `"arbitrum-rinkeby"`      |             |
 | `"arbitrum-goerli"`       |             |
 | `"celo"`                  |             |
@@ -1268,7 +1322,9 @@ Reference this group by using
 | `"hederatest"`            |             |
 | `"x-dfk-avax-chain"`      |             |
 | `"x-dfk-avax-chain-test"` |             |
+| `"zksync"`                |             |
 | `"zksync-goerli"`         |             |
+| `"base-goerli"`           |             |
 
 **URI reference**: the string must be a URI reference, according to [RFC 3986](https://tools.ietf.org/html/rfc3986 "check the specification")
 
@@ -1466,6 +1522,37 @@ one (and only one) of
 
 `string[]`
 
+### risk-category
+
+
+
+`risk-category`
+
+*   is optional
+
+*   Type: `string` ([RiskCategory](definitions-definitions-fortasentinel-properties-riskcategory.md))
+
+*   cannot be null
+
+*   defined in: [Definitions](definitions-definitions-fortasentinel-properties-riskcategory.md "#/definitions/fortaSentinel/properties/risk-category")
+
+#### risk-category Type
+
+`string` ([RiskCategory](definitions-definitions-fortasentinel-properties-riskcategory.md))
+
+#### risk-category Constraints
+
+**enum**: the value of this property must be equal to one of the following values:
+
+| Value              | Explanation |
+| :----------------- | :---------- |
+| `"NONE"`           |             |
+| `"GOVERNANCE"`     |             |
+| `"ACCESS-CONTROL"` |             |
+| `"SUSPICIOUS"`     |             |
+| `"FINANCIAL"`      |             |
+| `"TECHNICAL"`      |             |
+
 ## Definitions group sentinel
 
 Reference this group by using
@@ -1586,14 +1673,3 @@ Reference this group by using
 #### paused Type
 
 `boolean`
-
-## Definitions group abi
-
-Reference this group by using
-
-```json
-{"$ref":"#/definitions/abi"}
-```
-
-| Property | Type | Required | Nullable | Defined by |
-| :------- | :--- | :------- | :------- | :--------- |

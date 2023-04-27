@@ -3,6 +3,11 @@
   "title": "Definitions",
   "definitions": {
     "address": { "title": "Address", "type": "string", "pattern": "^0x[a-fA-F0-9]{40}$" },
+    "risk-category": {
+      "title": "RiskCategory",
+      "type": "string",
+      "enum": ["NONE", "GOVERNANCE", "ACCESS-CONTROL", "SUSPICIOUS", "FINANCIAL", "TECHNICAL"]
+    },
     "network": {
       "title": "Network",
       "type": "string",
@@ -30,6 +35,7 @@
         "optimism-kovan",
         "optimism-goerli",
         "arbitrum",
+        "arbitrum-nova",
         "arbitrum-rinkeby",
         "arbitrum-goerli",
         "celo",
@@ -42,7 +48,9 @@
         "hederatest",
         "x-dfk-avax-chain",
         "x-dfk-avax-chain-test",
-        "zksync-goerli"
+        "zksync",
+        "zksync-goerli",
+        "base-goerli"
       ]
     },
     "policy": {
@@ -97,13 +105,13 @@
       "type": "object",
       "properties": {
         "api-key": { "type": "string" },
-        "metric-p$refix": {
+        "metric-prefix": {
           "type": "string",
           "maxLength": 100,
           "pattern": "^[A-Za-z]+[A-Za-z0-9_\\.]*\\.$"
         }
       },
-      "required": ["api-key", "metric-p$refix"]
+      "required": ["api-key", "metric-prefix"]
     },
     "urlConfig": {
       "title": "UrlConfig",
@@ -233,7 +241,8 @@
             },
             "transaction": { "type": "string" }
           }
-        }
+        },
+        "risk-category": { "$ref": "definitions.schema.json/#/definitions/risk-category" }
       },
       "required": ["name", "type", "network", "addresses", "notify-config"]
     },
@@ -292,7 +301,8 @@
           "title": "AgentIDs",
           "type": "array",
           "items": { "type": "string" }
-        }
+        },
+        "risk-category": { "$ref": "definitions.schema.json/#/definitions/risk-category" }
       },
       "anyOf": [
         {
@@ -353,6 +363,23 @@
         { "title": "StringABI", "type": "string" },
         { "title": "ArrayABI", "type": "array" }
       ]
+    },
+    "deploymentConfig": {
+      "title": "DeploymentConfig",
+      "type": "object",
+      "properties": {
+        "relayer": { "$ref": "definitions.schema.json/#/definitions/relayer", "format": "uri-reference" }
+      },
+      "required": ["relayer"]
+    },
+    "blockExplorerApiKey": {
+      "title": "BlockExplorerApiKey",
+      "type": "object",
+      "properties": {
+        "key": { "type": "string" },
+        "network": { "$ref": "definitions.schema.json/#/definitions/network", "format": "uri-reference" }
+      },
+      "required": ["key", "network"]
     }
   }
 }
