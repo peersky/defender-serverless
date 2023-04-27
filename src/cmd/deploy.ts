@@ -349,7 +349,7 @@ export default class DefenderDeploy {
           name: match.name,
           network: match.network,
           address: match.address,
-          abi: match.abi && JSON.stringify(JSON.parse(match.abi)),
+          abi: match.abi && JSON.stringify(typeof match.abi === 'string' ? JSON.parse(match.abi) : match.abi),
           'nat-spec': match.natSpec ? match.natSpec : undefined,
         };
 
@@ -372,7 +372,8 @@ export default class DefenderDeploy {
           name: contract.name,
           network: match.network,
           address: match.address,
-          abi: contract.abi && JSON.stringify(JSON.parse(contract.abi)),
+          abi:
+            contract.abi && JSON.stringify(typeof contract.abi === 'string' ? JSON.parse(contract.abi) : contract.abi),
           natSpec: contract['nat-spec'] ? contract['nat-spec'] : undefined,
         });
 
@@ -389,7 +390,8 @@ export default class DefenderDeploy {
           name: contract.name,
           network: contract.network,
           address: contract.address,
-          abi: contract.abi && JSON.stringify(JSON.parse(contract.abi)),
+          abi:
+            contract.abi && JSON.stringify(typeof contract.abi === 'string' ? JSON.parse(contract.abi) : contract.abi),
           natSpec: contract['nat-spec'] ? contract['nat-spec'] : undefined,
         });
         return {
