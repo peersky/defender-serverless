@@ -96,6 +96,8 @@
 
 *   [AlertIDs](./definitions-definitions-fortasentinel-properties-conditions-properties-alertids.md) – `#/definitions/fortaSentinel/properties/conditions/properties/alert-ids`
 
+*   [ArrayABI](./definitions-definitions-abitype-oneof-arrayabi.md) – `#/definitions/abi/oneOf/1`
+
 *   [Channels](./definitions-definitions-blocksentinel-properties-notifyconfig-properties-channels.md) – `#/definitions/blockSentinel/properties/notify-config/properties/channels`
 
 *   [Channels](./definitions-definitions-fortasentinel-properties-notifyconfig-properties-channels.md) – `#/definitions/fortaSentinel/properties/notify-config/properties/channels`

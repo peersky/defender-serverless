@@ -300,7 +300,7 @@ Reference this group by using
 | [name](#name-1)       | `string` | Required | cannot be null | [Definitions](definitions-definitions-contract-properties-name.md "#/definitions/contract/properties/name")         |
 | [address](#address)   | `string` | Required | cannot be null | [Definitions](definitions-definitions-contract-properties-address.md "#/definitions/contract/properties/address")   |
 | [network](#network-1) | `string` | Required | cannot be null | [Definitions](definitions-definitions-contract-properties-network.md "#/definitions/contract/properties/network")   |
-| [abi](#abi)           | `string` | Optional | cannot be null | [Definitions](definitions-definitions-contract-properties-abi.md "#/definitions/contract/properties/abi")           |
+| [abi](#abi)           | Merged   | Optional | cannot be null | [Definitions](definitions-definitions-abitype.md "#/definitions/contract/properties/abi")                           |
 | [nat-spec](#nat-spec) | `string` | Optional | cannot be null | [Definitions](definitions-definitions-contract-properties-nat-spec.md "#/definitions/contract/properties/nat-spec") |
 
 ### name
@@ -422,15 +422,21 @@ Reference this group by using
 
 *   is optional
 
-*   Type: `string`
+*   Type: merged type ([AbiType](definitions-definitions-abitype.md))
 
 *   cannot be null
 
-*   defined in: [Definitions](definitions-definitions-contract-properties-abi.md "#/definitions/contract/properties/abi")
+*   defined in: [Definitions](definitions-definitions-abitype.md "#/definitions/contract/properties/abi")
 
 #### abi Type
 
-`string`
+merged type ([AbiType](definitions-definitions-abitype.md))
+
+one (and only one) of
+
+*   [StringABI](definitions-definitions-abitype-oneof-stringabi.md "check type definition")
+
+*   [ArrayABI](definitions-definitions-abitype-oneof-arrayabi.md "check type definition")
 
 ### nat-spec
 
@@ -837,7 +843,7 @@ Reference this group by using
 | [type](#type-1)                           | `string`  | Required | cannot be null | [Definitions](definitions-definitions-blocksentinel-properties-type.md "#/definitions/blockSentinel/properties/type")                      |
 | [network](#network-2)                     | `string`  | Required | cannot be null | [Definitions](definitions-definitions-blocksentinel-properties-network.md "#/definitions/blockSentinel/properties/network")                |
 | [addresses](#addresses)                   | `array`   | Required | cannot be null | [Definitions](definitions-definitions-blocksentinel-properties-addresses.md "#/definitions/blockSentinel/properties/addresses")            |
-| [abi](#abi-1)                             | `string`  | Optional | cannot be null | [Definitions](definitions-definitions-blocksentinel-properties-abi.md "#/definitions/blockSentinel/properties/abi")                        |
+| [abi](#abi-1)                             | Merged    | Optional | cannot be null | [Definitions](definitions-definitions-abitype.md "#/definitions/blockSentinel/properties/abi")                                             |
 | [alert-threshold](#alert-threshold)       | `object`  | Optional | cannot be null | [Definitions](definitions-definitions-blocksentinel-properties-alertthreshold.md "#/definitions/blockSentinel/properties/alert-threshold") |
 | [paused](#paused-1)                       | `boolean` | Optional | cannot be null | [Definitions](definitions-definitions-blocksentinel-properties-paused.md "#/definitions/blockSentinel/properties/paused")                  |
 | [autotask-condition](#autotask-condition) | `object`  | Optional | cannot be null | [Definitions](definitions-definitions-autotask.md "#/definitions/blockSentinel/properties/autotask-condition")                             |
@@ -979,15 +985,21 @@ Reference this group by using
 
 *   is optional
 
-*   Type: `string`
+*   Type: merged type ([AbiType](definitions-definitions-abitype.md))
 
 *   cannot be null
 
-*   defined in: [Definitions](definitions-definitions-blocksentinel-properties-abi.md "#/definitions/blockSentinel/properties/abi")
+*   defined in: [Definitions](definitions-definitions-abitype.md "#/definitions/blockSentinel/properties/abi")
 
 #### abi Type
 
-`string`
+merged type ([AbiType](definitions-definitions-abitype.md))
+
+one (and only one) of
+
+*   [StringABI](definitions-definitions-abitype-oneof-stringabi.md "check type definition")
+
+*   [ArrayABI](definitions-definitions-abitype-oneof-arrayabi.md "check type definition")
 
 ### alert-threshold
 
@@ -1143,7 +1155,7 @@ Reference this group by using
 | [type](#type-2)                             | `string`  | Required | cannot be null | [Definitions](definitions-definitions-fortasentinel-properties-type.md "#/definitions/fortaSentinel/properties/type")                      |
 | [network](#network-3)                       | `string`  | Required | cannot be null | [Definitions](definitions-definitions-fortasentinel-properties-network.md "#/definitions/fortaSentinel/properties/network")                |
 | [addresses](#addresses-1)                   | `array`   | Optional | cannot be null | [Definitions](definitions-definitions-fortasentinel-properties-addresses.md "#/definitions/fortaSentinel/properties/addresses")            |
-| [abi](#abi-2)                               | `string`  | Optional | cannot be null | [Definitions](definitions-definitions-fortasentinel-properties-abi.md "#/definitions/fortaSentinel/properties/abi")                        |
+| [abi](#abi-2)                               | Merged    | Optional | cannot be null | [Definitions](definitions-definitions-abitype.md "#/definitions/fortaSentinel/properties/abi")                                             |
 | [alert-threshold](#alert-threshold-1)       | `object`  | Optional | cannot be null | [Definitions](definitions-definitions-fortasentinel-properties-alertthreshold.md "#/definitions/fortaSentinel/properties/alert-threshold") |
 | [paused](#paused-2)                         | `boolean` | Optional | cannot be null | [Definitions](definitions-definitions-fortasentinel-properties-paused.md "#/definitions/fortaSentinel/properties/paused")                  |
 | [autotask-condition](#autotask-condition-1) | `object`  | Optional | cannot be null | [Definitions](definitions-definitions-autotask.md "#/definitions/fortaSentinel/properties/autotask-condition")                             |
@@ -1286,15 +1298,21 @@ Reference this group by using
 
 *   is optional
 
-*   Type: `string`
+*   Type: merged type ([AbiType](definitions-definitions-abitype.md))
 
 *   cannot be null
 
-*   defined in: [Definitions](definitions-definitions-fortasentinel-properties-abi.md "#/definitions/fortaSentinel/properties/abi")
+*   defined in: [Definitions](definitions-definitions-abitype.md "#/definitions/fortaSentinel/properties/abi")
 
 #### abi Type
 
-`string`
+merged type ([AbiType](definitions-definitions-abitype.md))
+
+one (and only one) of
+
+*   [StringABI](definitions-definitions-abitype-oneof-stringabi.md "check type definition")
+
+*   [ArrayABI](definitions-definitions-abitype-oneof-arrayabi.md "check type definition")
 
 ### alert-threshold
 
@@ -1568,3 +1586,14 @@ Reference this group by using
 #### paused Type
 
 `boolean`
+
+## Definitions group abi
+
+Reference this group by using
+
+```json
+{"$ref":"#/definitions/abi"}
+```
+
+| Property | Type | Required | Nullable | Defined by |
+| :------- | :--- | :------- | :------- | :--------- |

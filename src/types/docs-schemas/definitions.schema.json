@@ -82,7 +82,7 @@
         "name": { "type": "string" },
         "address": { "$ref": "definitions.schema.json/#/definitions/address", "format": "uri-reference" },
         "network": { "$ref": "definitions.schema.json/#/definitions/network", "format": "uri-reference" },
-        "abi": { "type": "string" },
+        "abi": { "$ref": "definitions.schema.json/#/definitions/abi" },
         "nat-spec": { "type": "string" }
       },
       "required": ["name", "address", "network"]
@@ -180,7 +180,7 @@
           "type": "array",
           "items": { "$ref": "definitions.schema.json/#/definitions/address", "format": "uri-reference" }
         },
-        "abi": { "type": "string" },
+        "abi": { "$ref": "definitions.schema.json/#/definitions/abi" },
         "alert-threshold": {
           "title": "AlertThreshold",
           "type": "object",
@@ -249,7 +249,7 @@
           "type": "array",
           "items": { "$ref": "definitions.schema.json/#/definitions/address", "format": "uri-reference" }
         },
-        "abi": { "type": "string" },
+        "abi": { "$ref": "definitions.schema.json/#/definitions/abi" },
         "alert-threshold": {
           "title": "AlertThreshold",
           "type": "object",
@@ -346,6 +346,13 @@
         "paused": { "type": "boolean" }
       },
       "required": ["name", "path", "trigger", "paused"]
+    },
+    "abi": {
+      "title": "AbiType",
+      "oneOf": [
+        { "title": "StringABI", "type": "string" },
+        { "title": "ArrayABI", "type": "array" }
+      ]
     }
   }
 }
